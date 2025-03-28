@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sayı Tahmin Oyunu</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #d4a373;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            flex-grow: 1;
+        }
+        .my-name {
+            background-color: yellow;
+            color: black !important;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar h3 {
+            color: white;
+            margin: 0 0 15px;
+            text-align: center;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        .team-tutanlar {
+            background: #e63946;
+        }
+        .team-bilenler {
+            background: #457b9d;
+        }
+        .player-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            color: #333;
+        }
+        .ready {
+            color: #2a9d8f;
+            font-weight: bold;
+        }
+        .main {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-transform: uppercase;
+        }
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: transform 0.1s ease, background-color 0.3s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .team-button-tutanlar {
+            background-color: #e63946;
+        }
+        .team-button-tutanlar:disabled {
+            background-color: #e63946;
+            opacity: 0.5;
+        }
+        .team-button-bilenler {
+            background-color: #457b9d;
+        }
+        .action-button {
+            background-color: #2a9d8f;
+        }
+        #cancelReadyButton {
+            background-color: #f4a261;
+        }
+        input {
+            padding: 12px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 200px;
+            font-size: 16px;
+        }
+        input:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+        .error-message {
+            color: #e63946;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        #result div {
+            margin-bottom: 5px;
+        }
+        .bull {
+            color: #2a9d8f;
+            font-weight: bold;
+        }
+        .cow {
+            color: #f4a261;
+            font-weight: bold;
+        }
+        #turnInfo {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #e63946;
+            font-weight: bold;
+        }
+        #timer, #turnDisplay, #leaderboardDisplay, #rulesModal, #gameOverModal {
+            position: fixed;
+            z-index: 1000;
+        }
+        #timer {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a9d8f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+        #turnDisplay {
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e63946;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+        #leaderboardDisplay {
+            bottom: 20px;
+            left: 20px;
+            background: #f4a261;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            max-width: 200px;
+            display: none;
+        }
+        #leaderboardDisplay h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            text-align: center;
+        }
+        #leaderboardDisplay p {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        #leaderboardButton {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: #f4a261;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        #rulesButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #f4a261;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        #rulesModal {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            display: none;
+        }
+        #rulesContent {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: left;
+            position: relative;
+        }
+        #closeRules {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #chatArea {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 300px;
+        }
+        #chatArea div {
+            font-size: 14px;
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        #chatArea .tutanlar-message {
+            background: #e63946;
+            color: white;
+        }
+        #chatArea .bilenler-message {
+            background: #457b9d;
+            color: white;
+        }
+        #chatArea .fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        #chatInputContainer {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #chatInput {
+            width: 200px;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        #sendMessageButton {
+            padding: 8px 15px;
+            background: #2a9d8f;
+            border-radius: 8px;
+            margin-left: 5px;
+        }
+        #notification {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a9d8f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease;
+        }
+        #notification.hidden {
+            opacity: 0;
+        }
+        #gameOverModal {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            display: none;
+        }
+        #gameOverContent {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+        }
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .game-panel {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="leaderboardButton" onclick="toggleLeaderboard()">Lider Tablosu</button>
+    <div id="leaderboardDisplay">
+        <h3>Lider Tablosu</h3>
+        <div id="leaderboardContent"></div>
+    </div>
+    <div id="timer"></div>
+    <div id="turnDisplay"></div>
+    <div id="notification" class="hidden"></div>
+    <button id="rulesButton" onclick="showRules()">Kurallar</button>
+    <div id="rulesModal">
+        <div id="rulesContent">
+            <span id="closeRules" onclick="closeRules()">×</span>
+            <h2>Oyun Kuralları</h2>
+            <p>- Oyun iki takımdan oluşur: <strong>Sayı Tutanlar</strong> ve <strong>Bilmeye Çalışanlar</strong>.</p>
+            <p>- Sayı Tutanlar takımı, 4 basamaklı bir sayı belirler (örneğin, 1234). Bu sayıda tekrar eden rakamlar da olabilir.</p>
+            <p>- Bilmeye Çalışanlar takımı, sırayla tahmin yaparak bu sayıyı bulmaya çalışır.</p>
+            
+            <p>- Her tahminde, doğru rakamlar için geri bildirim verilir:</p>
+            <ul>
+                <li><strong>Boğa:</strong> Doğru rakam, doğru pozisyon.</li>
+                <li><strong>İnek:</strong> Doğru rakam, yanlış pozisyon.</li>
+            </ul>
+            <p>- Her oyuncunun tahmini için 30 saniyesi vardır. Süre biterse sıra bir sonraki oyuncuya geçer.</p>
+            <p>- Sayıyı doğru tahmin eden oyuncu oyunu kazanır ve puan alır:</p>
+            <ul>
+                <li>Her boğa için 5 puan, her inek için 2 puan.</li>
+                <li>Doğru tahmin için 50 puan.</li>
+                <li>5 tahminden önce bulursa 10 puan, 10 tahminden önce bulursa 5 puan bonus.</li>
+            </ul>
+            <p>- Sayı Tutanlar, tahminler doğru oldukça puan kaybeder ama minimum 20 puan garantisi vardır. Eğer 10 tahminden sonra sayı bulunamazsa 30 puan bonus alır.</p>
+            <p>- Her oyun sonunda takımlar otomatik olarak değişir, böylece herkes Sayı Tutanlar rolünü oynar.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Sol: Sayı Tutanlar -->
+        <div class="sidebar team-tutanlar">
+            <h3>Sayı Tutanlar</h3>
+            <div id="tutanlar"></div>
+        </div>
+
+        <!-- Orta: Bekleyenler ve Oyun Alanı
+        <div class="sidebar bekleyenler" id="bekleyenlerPanel">
+            <h3>Bekleyenler</h3>
+            <div id="bekleyenler"></div>
+        </div>  -->
+
+        <div class="main">
+            <div class="game-panel">
+                <!-- İsim Girişi -->
+                <div id="nameSelection">
+                    <h1>İsmini Gir</h1>
+                    <input type="text" id="playerName" placeholder="İsminizi yazın" maxlength="15" inputmode="text">
+                    <div id="playerNameError" class="error-message"></div>
+                    <button class="action-button" onclick="submitName()">Katıl</button>
+                </div>
+
+                <!-- Takım Seçimi -->
+                <div id="teamSelection" class="hidden">
+                    <h1>Hangi takıma katılmak istiyorsun?</h1>
+                    <button id="teamButtonTutanlar" class="team-button-tutanlar" onclick="joinTeam('tutanlar')">Sayı Tutanlar</button>
+                    <button id="teamButtonBilenler" class="team-button-bilenler" onclick="joinTeam('bilenler')">Bilmeye Çalışanlar</button>
+                </div>
+
+                <!-- Oyun Kontrolleri -->
+                <div id="gameArea" class="hidden">
+                    <h1>Sayı Tahmin Oyunu</h1>
+                    <button id="readyButton" class="action-button" onclick="setReady()">Hazır</button>
+                    <button id="cancelReadyButton" class="hidden" onclick="cancelReady()">İptal Et</button>
+                    <button id="changeTeamButton" class="action-button hidden" onclick="changeTeam()">Takım Değiştir</button>
+
+                    <div id="gameControls" class="hidden">
+                        <div id="tutanlarControls" class="hidden">
+                            <input type="text" id="secretNumber" placeholder="4 basamaklı sayıyı gir" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                            <div id="secretNumberError" class="error-message"></div>
+                            <button class="action-button" onclick="setSecretNumber()">Sayiyi Belirle</button>
+                        </div>
+                        <div id="bilenlerControls" class="hidden">
+                            <input type="text" id="guess" placeholder="Tahminini gir" maxlength="4" disabled inputmode="numeric" pattern="[0-9]*">
+                            <div id="guessError" class="error-message"></div>
+                            <button id="guessButton" class="action-button" onclick="checkGuess()" disabled>Tahmin Et</button>
+                            <div id="turnInfo"></div>
+                        </div>
+                    </div>
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ: Bilmeye Çalışanlar -->
+        <div class="sidebar team-bilenler">
+            <h3>Bilmeye Çalışanlar</h3>
+            <div id="bilenler"></div>
+        </div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chatArea"></div>
+    <div id="chatInputContainer">
+        <input type="text" id="chatInput" placeholder="Mesaj yaz..." maxlength="100" inputmode="text">
+        <button id="sendMessageButton" class="action-button" onclick="sendMessage()">Gönder</button>
+    </div>
+
+    <!-- Game Over -->
+    <div id="gameOverModal" class="hidden">
+        <div id="gameOverContent">
+            <h2>Oyun Bitti!</h2>
+            <p id="gameOverMessage"></p>
+            <div id="leaderboard"></div>
+            <button class="action-button" onclick="restartGame()">Yeniden Oyna</button>
+        </div>
+    </div>
+
+    <!-- Konfeti -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Scriptler -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
