@@ -11,6 +11,11 @@ const io = new Server(server, {
     }
 });
 
+// Yeni eklenen ping endpoint’i
+app.get('/ping', (req, res) => {
+    res.send('Awake!'); // Sunucunun uyanık olduğunu bildirir
+});
+
 app.use(express.static(__dirname));
 
 const CONFIG = {
@@ -38,18 +43,17 @@ let guessCount = 0;
 let tutanlarPlayerId = null;
 let playerOrder = [];
 
-// ✨ HTML Injection'a karşı temel filtre
 function sanitizeHTML(str) {
     return str.replace(/[&<>"'`=\/]/g, function (s) {
         return ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            '"': '"',
             "'": '&#39;',
-            '/': '&#x2F;',
-            '`': '&#x60;',
-            '=': '&#x3D;'
+            '/': '/',
+            '`': '`',
+            '=': '='
         })[s];
     });
 }
@@ -62,14 +66,13 @@ io.on('connection', (socket) => {
         socket.emit('updatePlayers', { teams, players });
     }
 
-    // İsim belirlendiğinde oyuncu oluştur
     socket.on('setName', (name) => {
         players[socket.id] = { name, ready: false, score: 0 };
         if (!playerOrder.includes(socket.id)) {
             playerOrder.push(socket.id);
         }
         console.log(`Oyuncu eklendi: ${name} (${socket.id})`);
-        io.emit('updatePlayers', { teams, players }); // ⭐ Oyuncu eklendiğini herkese bildir
+        io.emit('updatePlayers', { teams, players });
     });
 
     socket.on('joinTeam', ({ name, team }) => {
@@ -144,12 +147,6 @@ io.on('connection', (socket) => {
             return;
         }
 
-        /* const digits = number.split('');
-        if (new Set(digits).size !== CONFIG.NUMBER_LENGTH) {
-            socket.emit('error', 'Rakamlar farklı olmalı!');
-            return;
-        } */
-
         secretNumber = number;
         gameStarted = true;
         guessCount = 0;
@@ -167,18 +164,13 @@ io.on('connection', (socket) => {
             return;
         }
 
-        /* const guessArray = guess.split('');
-        if (new Set(guessArray).size !== CONFIG.NUMBER_LENGTH) {
-            socket.emit('error', 'Rakamlar farklı olmalı!');
-            return;
-        } */
-
         clearTurnTimer();
         guessCount++;
 
         let bulls = 0;
         let cows = 0;
         const secretArray = secretNumber.split('');
+        const guessArray = guess.split(''); // guessArray burada tanımlı hale getirildi
 
         for (let i = 0; i < CONFIG.NUMBER_LENGTH; i++) {
             if (secretArray[i] === guessArray[i]) {
